@@ -1,0 +1,17 @@
+library(data.table)
+library(dplyr)
+library(spacyr)
+library(reticulate)
+
+spacy_install()
+spacy_download_langmodel('en_core_web_sm')
+spacy_initialize(model = 'en_core_web_sm')
+
+
+comb_news =read.csv('Combined_News_DJIA.csv', stringsAsFactors = T)
+DJIA_table = read.csv('upload_DJIA_table.csv' , stringsAsFactors = T)
+
+reddit = read.csv('RedditNews.csv', stringsAsFactors = T)
+reddit$News = as.character(reddit$News)
+
+parseReddit = spacy_parse(reddit$News)
