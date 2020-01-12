@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Dec 19 11:54:32 2019
+
+@author: cyrzon
+"""
+
 import pandas as pd
 
 #import spacy 
@@ -7,7 +14,7 @@ import pandas as pd
 import random
 import sklearn.metrics as metrics
 
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, HashingVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
@@ -16,30 +23,6 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 
-# add trainHeadlines to the list for CountVectorizer and center the data
-basicVectorizer = CountVectorizer()
-basictrain = basicVectorizer.fit_transform(trainHeadlines)
-
-# logistic regression: basic "bag of words" model
-# create model
-basicMod = LogisticRegression(solver = "lbfgs", max_iter = 100)
-basicMod = basicMod.fit(basictrain, train["Label"])
-
-# test model, assess performance and view coefficients
-basicTest = basicVectorizer.transform(testHeadlines)
-basicPredictions = basicMod.predict(basicTest)
-
-metrics.accuracy_score(test["Label"], basicPredictions)
-# 0.3968253968253968 # with stop words removed
-# 0.42857142857142855 # with stop words kept
-# 0.4312169312169312 # with stop words and .,?! kept
-
-basicWords = basicVectorizer.get_feature_names()
-basicCoeffs = basicMod.coef_.tolist()[0]
-coeffDf = pd.DataFrame({'Word' : basicWords, 
-                        'Coefficient' : basicCoeffs})
-coeffDf = coeffDf.sort_values(['Coefficient', 'Word'], ascending=[0, 1])
-coeffDf.head(10)
 
 # "n-gram" model where n = 2
 # create model
@@ -120,40 +103,3 @@ randmClassifiers = [
     DecisionTreeClassifier(),
     RandomForestClassifier(n_estimators=200)
     ]
-
-#dense_features = ngramTrain.toarray()
-#dense_test = test_features.toarray()
-
-TfidfAccuracy=[]
-TfidfModel=[]
-
-for classifier in randmClassifiers:
-    for x in range(0,10):
-        random.seed(x)
-        fit = classifier.fit(TfidfTrain,train['Label'])
-        pred = fit.predict(TfidfTest)
-        prob = fit.predict_proba(TfidfTest)[:,1]
-        
-        accuracy = metrics.accuracy_score(pred, test['Label'])
-        TfidfAccuracy.append(accuracy)
-        TfidfModel.append(classifier.__class__.__name__)
-        
-        print('Accuracy of '+classifier.__class__.__name__+' is '+str(accuracy))
-
-rndmModelPerf = pd.DataFrame({
-        'Model': TfidfModel,
-        'Acc': TfidfAccuracy
-        })
-
-    
-# hashing vectorizer - tokenizes by createing a correlational matrix
-hashingVectorizer = HashingVectorizer(n_features=50)
-hashingTrain = hashingVectorizer.fit_transform(trainHeadlines)
-
-hashingModel = LogisticRegression(solver = 'lbfgs')
-hashingModel = hashingModel.fit(hashingTrain, train["Label"])
-
-hashingTest = hashingVectorizer.transform(testHeadlines)
-hashingPreds = hashingModel.predict(hashingTest)
-
-metrics.accuracy_score(test["Label"], hashingPreds)
